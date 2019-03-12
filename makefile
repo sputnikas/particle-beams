@@ -25,8 +25,7 @@ clean:
 	rm -f $(addprefix $(OBJDIR), $(OBJ)) $(EXE)
 	
 
-asm : asmdir $(ASM)
-	@echo $(ASM)
+asm : asmdir $(addprefix $(ASMDIR), $(ASM))
 	
 asmdir : 
 	mkdir -p asm/
