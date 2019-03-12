@@ -9,7 +9,11 @@ EXE = bin/test.exe
 ASM = $(SRC:.cpp=.s)
 ASMDIR = asm/
 
-all: $(EXE)
+all: dir $(EXE)
+
+dir:
+	mkdir -p obj/
+	mkdir -p obj/src/
 
 $(EXE): $(addprefix $(OBJDIR), $(OBJ))
 	$(CC) $(addprefix $(OBJDIR), $(OBJ)) -o $@ $(LDFLAGS)
@@ -19,13 +23,19 @@ $(OBJDIR)%.o: %.cpp
 
 clean:
 	rm -f $(addprefix $(OBJDIR), $(OBJ)) $(EXE)
+	rm -r obj/
 	
 
-asm : $(ASM)
+asm : asmdir $(ASM)
 	@echo $(ASM)
+	
+asmdir : 
+	mkdir -p asm/
+	mkdir -p asm/src/
 
 %.s: %.cpp
 	$(CC) -S -masm=intel $(DEFINES) $< -o $(ASMDIR)$@
 
 cleanasm:
 	rm -f $(addprefix $(ASMDIR), $(ASM))
+	rm -r asm/
