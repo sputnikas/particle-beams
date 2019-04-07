@@ -10,44 +10,54 @@
 #define __VEC2T(a, b) Vec2<T>((a), (b))
 #endif // __cplusplus
 
+#ifndef INLINE
+#define INLINE inline
+#endif // INLINE
+
 template <typename T>
 class Vec2 {
 	public:
 		T x;
 		T y;
 
+		#ifdef HAS_TEST_CONSTRUCTOR
+		static int index_constructor;
+		#endif // HAS_TEST_CONSTRUCTOR
+
 		Vec2();
-		Vec2(const T &, const T &);
-		Vec2(const Vec2<T> &);
+		Vec2(const T &x, const T &y);
+		Vec2(const Vec2<T> &a);
 		~Vec2();
+
+		// Операторы сложения и вычитания
+		INLINE Vec2<T> operator + (const Vec2<T> &a) const;
+		INLINE Vec2<T> operator - (const Vec2<T> &a) const;
+		INLINE Vec2<T> operator - ();
+		INLINE void operator += (const Vec2<T> &a);
+		INLINE void operator -= (const Vec2<T> &a);
+		// Операторы умножения
+		INLINE Vec2<T> operator * (const T &f) const;
+		INLINE void operator *= (const T &f);
+		INLINE Vec2<T> operator / (const T &f) const;
+		INLINE void operator /= (const T &f);
+		// Скалярное произведение
+		INLINE T dot(const Vec2<T> &a) const;
+		// Векторное произведение - краеугольный камень любой шаблонной реализации
+		// если размерность пространства = N, то векторное произведение определяется
+		// как вектор, нормальный к подпространству из N-1 векторов и по длине равный
+		// N-мерному объёму параллелипепипеда построенного на N-1 векторах + направление
+		// определяется способом обхода! Получается, что количество аргументов функции cross
+		// равно N - 1 для внешней функции и N-2 для функции класса, то есть зависит от параметра шаблона!
+		INLINE Vec2<T> cross() const;
+		// Нормы
+		INLINE T norm() const;
+		INLINE T norm2() const;
+		// Операторы сравнения
+		INLINE bool operator < (const T &f) const;
+		INLINE bool operator > (const T &f) const;
+		INLINE bool operator == (const Vec2<T> &a) const;
 };
 
-template <typename T> std::ostream &operator<< (std::ostream &, const Vec2<T> &);
-
-// Операторы сложения и вычитания
-template <typename T> inline Vec2<T> operator + (const Vec2<T> &, const Vec2<T> &);
-template <typename T> inline Vec2<T> operator - (const Vec2<T> &, const Vec2<T> &);
-template <typename T> inline Vec2<T> operator - (const Vec2<T> &);
-template <typename T> inline void operator += (Vec2<T> &, const Vec2<T> &);
-template <typename T> inline void operator -= (Vec2<T> &, const Vec2<T> &);
-// Операторы умножения
-template <typename T> inline Vec2<T> operator * (const T &, const Vec2<T> &);
-template <typename T> inline Vec2<T> operator * (const Vec2<T> &, const T &);
-template <typename T> inline void operator *= (Vec2<T> &, const T &);
-template <typename T> inline T operator * (const Vec2<T> &, const Vec2<T> &);
-template <typename T> inline Vec2<T> operator / (const Vec2<T> &, const T &);
-template <typename T> inline void operator /= (Vec2<T> &, const T &);
-// Скалярное произведение
-template <typename T> inline T dot(const Vec2<T> &, const Vec2<T> &);
-// Нормы
-template <typename T> inline T norm(const Vec2<T> &);
-template <typename T> inline T norm2(const Vec2<T> &);
-// Операторы сравнения
-template <typename T> inline bool operator < (const Vec2<T> &, const T &);
-template <typename T> inline bool operator > (const Vec2<T> &, const T &);
-template <typename T> inline bool operator == (const Vec2<T> &, const Vec2<T> &);
-
-// Тестовая функция
 #ifdef HAS_TEST
 	void test_vec2();
 #endif // HAS_TEST
@@ -59,26 +69,42 @@ template <typename T> inline bool operator == (const Vec2<T> &, const Vec2<T> &)
 template <typename T>
 Vec2<T>::Vec2() : x(0), y(0)
 {
-}
+	#ifdef HAS_TEST_CONSTRUCTOR
+	index_constructor++;
+	std::cout << "constructor Vec2() : " << index_constructor << std::endl;
+	#endif // HAS_TEST_CONSTRUCTOR
+};
 
 template <typename T>
 Vec2<T>::Vec2(const T &x, const T &y)
 	: x(x), y(y)
 {
-}
+	#ifdef HAS_TEST_CONSTRUCTOR
+	index_constructor++;
+	std::cout << "constructor Vec2(x,y) : " << index_constructor << std::endl;
+	#endif // HAS_TEST_CONSTRUCTOR
+};
 
 template <typename T>
-Vec2<T>::Vec2(const Vec2<T> &a) : x(a.x), y(a.y)
+Vec2<T>::Vec2(const Vec2<T> &a) : x(a.x), y(a.y) 
 {
-}
+	#ifdef HAS_TEST_CONSTRUCTOR
+	index_constructor++;
+	std::cout << "copy constructor Vec2 : " << index_constructor << std::endl;
+	#endif // HAS_TEST_CONSTRUCTOR
+};
 
 template <typename T>
 Vec2<T>::~Vec2()
 {
-}
+	#ifdef HAS_TEST_CONSTRUCTOR
+	index_constructor--;
+	std::cout << "destructor Vec2(const Vec2<T> &) : " << index_constructor << std::endl;
+	#endif // HAS_TEST_CONSTRUCTOR
+};
 
 template <typename T>
-std::ostream &operator<< (std::ostream &os, const Vec2<T> &a)
+std::ostream &operator << (std::ostream &os, const Vec2<T> &a)
 {
 	os << "{" << a.x << ", " << a.y << "}";
 	return os;
@@ -86,125 +112,112 @@ std::ostream &operator<< (std::ostream &os, const Vec2<T> &a)
 
 // Операторы сложения и вычитания
 template <typename T>
-inline Vec2<T> operator + (const Vec2<T> &a, const Vec2<T> &b)
+INLINE Vec2<T> Vec2<T>::operator + (const Vec2<T> &a) const
 {
-	return __VEC2T(a.x + b.x, a.y + b.y);
+	return __VEC2T(x + a.x, y + a.y);
 };
 
 template <typename T>
-inline Vec2<T> operator - (const Vec2<T> &a, const Vec2<T> &b)
+INLINE Vec2<T> Vec2<T>::operator - (const Vec2<T> &a) const
 {
-	return __VEC2T(a.x - b.x, a.y - b.y);
+	return __VEC2T(x - a.x, y - a.y);
 };
 
 template <typename T>
-inline Vec2<T> operator - (const Vec2<T> &a)
+INLINE Vec2<T> Vec2<T>::operator - ()
 {
-	return __VEC2T(- a.x, - a.y);
+	return __VEC2T(- x, - y);
 };
 
 template <typename T>
-inline void operator += (Vec2<T> &a, const Vec2<T> &b)
+INLINE void Vec2<T>::operator += (const Vec2<T> &a)
 {
-	a.x += b.x;
-	a.y += b.y;
+	x += a.x;
+	y += a.y;
 };
 
 template <typename T>
-inline void operator -= (Vec2<T> &a, const Vec2<T> &b)
+INLINE void Vec2<T>::operator -= (const Vec2<T> &a)
 {
-	a.x -= b.x;
-	a.y -= b.y;
+	x -= a.x;
+	y -= a.y;
 };
 
 // Операторы умножения
 template <typename T>
-inline Vec2<T> operator * (const T &f, const Vec2<T> &a)
+INLINE Vec2<T> operator * (const T &f, const Vec2<T> &a)
 {
 	return __VEC2T(f * a.x, f * a.y);
 };
 
 template <typename T>
-inline Vec2<T> operator * (const Vec2<T> &a, const T &f)
+INLINE Vec2<T> Vec2<T>::operator * (const T &f) const
 {
-	return __VEC2T(f * a.x, f * a.y);
+	return __VEC2T(f * x, f * y);
 };
 
 template <typename T>
-inline void operator *= (Vec2<T> &a, const T &f)
+INLINE void Vec2<T>::operator *= (const T &f)
 {
-	a.x *= f;
-	a.y *= f;
+	x *= f;
+	y *= f;
 };
 
 template <typename T>
-inline Vec2<T> operator / (const Vec2<T> &a, const T &f)
+INLINE Vec2<T> Vec2<T>::operator / (const T &f) const
 {
-	return __VEC2T(a.x / f, a.y / f);
+	return __VEC2T(x / f, y / f);
 };
 
 template <typename T>
-inline void operator /= (Vec2<T> &a, const T &f)
+INLINE void Vec2<T>::operator /= (const T &f)
 {
-	a.x /= f;
-	a.y /= f;
-};
-
-template <typename T>
-inline T operator * (const Vec2<T> &a, const Vec2<T> &b)
-{
-	return a.x * b.y - a.y * b.x;
+	x /= f;
+	y /= f;
 };
 
 // Скалярное произведение
 template <typename T>
-inline T dot(const Vec2<T> &a, const Vec2<T> &b)
+INLINE T Vec2<T>::dot(const Vec2<T> &a) const
 {
-	return a.x * b.x + a.y * b.y;
+	return a.x * x + a.y * y;
 };
 
-template <>
-inline std::complex<float> dot<std::complex<float>> (const Vec2<std::complex<float>> &a,
-		const Vec2<std::complex<float>> &b)
+// Векторное произведение
+template <typename T>
+INLINE Vec2<T> Vec2<T>::cross() const
 {
-	return std::conj(a.x) * b.x + std::conj(a.y) * b.y;
-};
-
-template <>
-inline std::complex<double> dot<std::complex<double>> (const Vec2<std::complex<double>> &a,
-		const Vec2<std::complex<double>> &b)
-{
-	return std::conj(a.x) * b.x + std::conj(a.y) * b.y;
+	return __VEC2T(y, -x);
 };
 
 // Нормы
 template <typename T>
-inline T norm2(const Vec2<T> &a)
+INLINE T Vec2<T>::norm2() const
 {
-	return dot(a, a);
+	return x*x + y*y;
 };
 
 template <typename T>
-inline T norm(const Vec2<T> &a)
+INLINE T Vec2<T>::norm() const
 {
-	return sqrt(norm2(a));
+	return std::sqrt(x*x + y*y);
 };
 
 // Операторы сравнения
 template <typename T>
-inline bool operator < (const Vec2<T> &a, const T &f)
+INLINE bool Vec2<T>::operator < (const T &f) const
 {
-	return norm2(a) < f*f;
+	return norm2() < f*f;
 };
 
 template <typename T>
-inline bool operator > (const Vec2<T> &a, const T &f)
+INLINE bool Vec2<T>::operator > (const T &f) const
 {
-	return norm2(a) > f*f;
+	return norm2() > f*f;
 };
 
 template <typename T>
-inline bool operator == (const Vec2<T> &a, const Vec2<T> &b)
+INLINE bool Vec2<T>::operator == (const Vec2<T> &a) const
 {
-	return norm2(a - b) == 0;
+	return ((x - a.x) == 0) && ((y - a.y) == 0);
 };

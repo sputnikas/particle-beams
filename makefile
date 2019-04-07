@@ -1,8 +1,9 @@
 CC = g++
 CFLAGS = -c -Wall -O0
 LDFLAGS = 
-DEFINES = -DHAS_TEST
-SRC = main.cpp src/expression.cpp src/vec2.cpp src/vec3.cpp
+DEFINES = -DHAS_TEST #-DHAS_TEST_CONSTRUCTOR
+SRC = main.cpp src/vec2.cpp src/vec3.cpp
+HDR = $(SRC:.cpp=.h)
 OBJ = $(SRC:.cpp=.o)
 OBJDIR = obj/
 EXE = bin/test.exe
@@ -18,7 +19,7 @@ dir:
 $(EXE): $(addprefix $(OBJDIR), $(OBJ))
 	$(CC) $(addprefix $(OBJDIR), $(OBJ)) -o $@ $(LDFLAGS)
 	
-$(OBJDIR)%.o: %.cpp
+$(OBJDIR)%.o: %.cpp %.h
 	$(CC) $(CFLAGS) $(DEFINES) $< -o $@ 
 
 clean:

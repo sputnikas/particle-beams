@@ -18,17 +18,6 @@ const double CL2 = 8.9875517873681764E16;
 // 
 //////////////////////////////////////////////////////////////////////////////
 
-class Field {
-public:
-
-};
-
-class FieldEM : public Field {
-public:
-    Vec3<double> E;
-    Vec3<double> B;
-};
-
 class ParticleTypeBase {
 public:
     
@@ -67,7 +56,7 @@ void ParticleDataBase<ParticleTypePointR>::field(Vec3<double> &E, Vec3<double> &
     Vec3<double> Rv = rs - r;
     double R = norm(Rv);
     Vec3<double> normal = Rv/R;
-        
+
 }
 
 class ParticleBase {
