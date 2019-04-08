@@ -18,55 +18,75 @@ const double CL2 = 8.9875517873681764E16;
 // 
 //////////////////////////////////////////////////////////////////////////////
 
-class ParticleTypeBase {
-public:
-    
-};
+//////////////////////////////////////////////////////////////////////////////
+// ParticleData
+// хранит информацию о положении частицы скоростях и ускорении
+// здесь снова находится краегульный камень
+// дело в том, что если рассматривать частицы, как нечто обобщённое,
+// то они бывают различными:
+//      по скорости и характеру взаимодействия:
+//          - нерелятивистские
+//          - релятивисткие
+//      по типу распределения заряда, массы, формы и соответственно поля их окружающего:
+//          - с простой симметрией (r, v, a) и всё
+//              - точечные
+//              - шаровые
+//              - сферические
+//          - с более сложной симметрией (появляются дополнительные степени свободы, как углы Эйлера или сложнее)
+//              - точечные диполи
+//              - точечные квадруполи ...
+//              - кольца
+//              - диски
+//              - стержни
+//          - с дополнительными необычными степенями свободы:
+//              - частицы переменной массы (они ж крупные, могут и разделиться при столкновении!)
+// и как учитывать всё это многообразие непонятно...
+// а ведь ещё и можно задачу решать как в переменных (r, v, a), так и в переменных (r, p, F)!
+// и в данном месте я окончательно выпадаю в осадок:
+//      чтобы сделать такую абстракцию, которую потом легко расширить, изменить - нужно быть гением c++
+//      единственный вариант, который я пока вижу для данной задачи - это использование специализированных шаблонов
+//      и да мне такая сложность не нравится
+// поэтому мы пока остановимся на одном единственном типе частиц с точечной (шаровой) симметрией
+//////////////////////////////////////////////////////////////////////////////
 
-template <typename PType>
-class ParticleDataBase {
-
-};
-
-class ParticleTypePointR : public ParticleTypeBase {
-public:
-    double q;
-    double m;
-    double qPm;
-};
-
-class ParticleTypeSphereR : public ParticleTypeBase {
-public:
-    double q;
-    double m;
-    double qPm;
-    double radius;
-};
-
-class ParticleDataBase<ParticleTypePointR> {
+class ParticleData {
 public:
     Vec3<double> r;
     Vec3<double> v;
     Vec3<double> a;
-
-    void field(Vec3<double> &E, Vec3<double> &B, const Vec3<double> &r, ParticleTypePointR *type);
 };
 
-void ParticleDataBase<ParticleTypePointR>::field(Vec3<double> &E, Vec3<double> &B, const Vec3<double> &rs, ParticleTypePointR *type) {
-    Vec3<double> Rv = rs - r;
-    double R = norm(Rv);
-    Vec3<double> normal = Rv/R;
+//////////////////////////////////////////////////////////////////////////////
+// ParticleType
+// нужен чтобы хранить параметры общие для групп частиц
+//////////////////////////////////////////////////////////////////////////////
 
-}
-
-class ParticleBase {
+class ParticleType {
 public:
-
 };
 
-template <typename PType>
-class Particle : public ParticleBase {
+class ParticleTypePointR : public ParticleType {
 public:
-    std::vector<ParticleDataBase<PType>> p;
-    PType *type;
+    double q;
+    double m;
+    double qpm;
+};
+
+class ParticleTypeSphereR : public ParticleType {
+public:
+    double q;
+    double m;
+    double qpm;
+    double radius;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Particle - in time
+//////////////////////////////////////////////////////////////////////////////
+
+class Particle {
+public:
+    std::vector<ParticleData> p;
+    int nmax;
+    ParticleType *type;
 };
