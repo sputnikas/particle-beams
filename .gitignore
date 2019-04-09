@@ -9,7 +9,7 @@
 *.s
 
 # Directories
-./.vscode
+./.vscode/
 
 # Result files
 *.dat
@@ -38,5 +38,3 @@
 *.exe
 *.out
 *.app
-.vscode/ipch/6ee491e1759d5ec5/PARTICLE.ipch
-*.ipch
