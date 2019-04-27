@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -c -Wall -O0
 LDFLAGS = 
 DEFINES = -DHAS_TEST #-DHAS_TEST_CONSTRUCTOR
-SRC = main.cpp src/vec2.cpp src/vec3.cpp
+SRC = main.cpp src/vec2.cpp src/vec3.cpp src/particle2.cpp
 HDR = $(SRC:.cpp=.h)
 OBJ = $(SRC:.cpp=.o)
 OBJDIR = obj/
