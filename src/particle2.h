@@ -14,6 +14,35 @@ const double RL   = 2.8179402894E-15;
 const double CL2  = 8.9875517873681764E16;
 
 //////////////////////////////////////////////////////////////////////////////
+// Функции для СТО
+// скорости в единицах c, energy - в единицах энергии покоя, momentum - в единицах mc
+//////////////////////////////////////////////////////////////////////////////
+
+inline double energy_v(const Vec3<double> &v) {
+    return 1/sqrt(1 - v.norm2());
+}
+
+inline Vec3<double> momentum_v(const Vec3<double> &v) {
+    return v/sqrt(1 - v.norm2());
+}
+
+inline double energy_u(const Vec3<double> &u) {
+    return sqrt(1 + u.norm2());
+}
+
+inline Vec3<double> velocity_u(const Vec3<double> &u) {
+    return u/sqrt(1 + u.norm2());
+}
+
+inline Vec3<double> acceleration(const Vec3<double> &fpm, const Vec3<double> &v) {
+    return (fpm - v*fpm.dot(v))*sqrt(1 - v.norm2());
+}
+
+inline Vec3<double> forcepm(const Vec3<double> &acceleration, const Vec3<double> &v) {
+    return (acceleration + acceleration.dot(v)*v)/sqrt(1 - v.norm2());
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // Particle
 // После долгих размышлений появилась одна идея:
 //      частицы, должны быть упорядочены во временной массив!
@@ -73,6 +102,7 @@ public:
     virtual void potential(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r) = 0;
+    virtual Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) = 0;
 };
 
 class ParticleTypePoint : public ParticleType {
@@ -88,6 +118,7 @@ public:
     void potential(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
+    Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
 };
 
 class ParticleTypeSphere : public ParticleType {
@@ -104,6 +135,7 @@ public:
     void potential(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
+    Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
 };
 
 class ParticleTypeBall : public ParticleType {
@@ -120,13 +152,14 @@ public:
     void potential(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
+    Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
 };
 
 //////////////////////////////////////////////////////////////////////////////
 // Particle - in time
-// частицы расположены в обратном порядке:
-// первая в момент времени nmax
-// последняя в момент времени nmax - size() - то есть в начальный момент времени
+// частицы расположены в прямом порядке:
+// last в момент времени nmax
+// 1 в момент времени nmax - size() - то есть в начальный момент времени
 //////////////////////////////////////////////////////////////////////////////
 
 class Particle {

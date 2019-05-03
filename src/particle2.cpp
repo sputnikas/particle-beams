@@ -60,6 +60,10 @@ void ParticleTypePoint::potentialN(Vec3<double> &A, double &phi, const ParticleD
     }
 }
 
+Vec3<double> ParticleTypePoint::forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) {
+    return qpm*(E + v.cross(B));
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // relativistic ball type
 //////////////////////////////////////////////////////////////////////////////
@@ -138,6 +142,10 @@ void ParticleTypeBall::potentialN(Vec3<double> &A, double &phi, const ParticleDa
     }
 }
 
+Vec3<double> ParticleTypeBall::forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) {
+    return qpm*(E + v.cross(B));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Sphere method 
 // Различные реализации метода сфер
@@ -152,26 +160,36 @@ std::pair<size_t, ParticleData> sm_left_intervals(  Particle *p,
                                                     const double &dt    ) 
 {
     ParticleData result;
-    std::vector<ParticleData>::reverse_iterator pl = p->p.rbegin();
-    std::vector<ParticleData>::iterator pr = p->p.begin();
+    std::vector<ParticleData>::iterator pl = p->p.begin();
+    std::vector<ParticleData>::reverse_iterator pr = p->p.rbegin();
     double ct(CL*t);
     double cdt(CL*dt);
-    size_t nmin(p->nmax - p->p.size());
+    size_t nmin(p->nmax - p->p.size() + 1);
     size_t nmax(p->nmax);
     double f;
 
-    if ((f = (ct - nmax*cdt) - (r - pl->r).norm()) > 0) {
+    //std::cout << "nmin = " << nmin << " nmax = " << nmax << std::endl;
+    //std::cout << "end : "    << p->p.end()->r    << std::endl;
+    //std::cout << "begin : "  << p->p.begin()->r  << std::endl;
+    //std::cout << "rend : "   << p->p.rend()->r   << std::endl;
+    //std::cout << "rbegin : " << p->p.rbegin()->r << std::endl;
+
+    if ((f = (ct - nmin*cdt) - (r - pl->r).norm()) < 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
-    if ((f = (ct - nmin*cdt) - (r - pr->r).norm()) < 0) {
+    std::cout << "n = " << nmin << " f = " << f << std::endl;
+    if ((f = (ct - nmax*cdt) - (r - pr->r).norm()) > 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
+    std::cout << "n = " << nmax << " f = " << f << std::endl;
     do {
-        f = (ct - nmax*cdt) - (r - pl->r).norm();
+        f = (ct - nmax*cdt) - (r - pr->r).norm();
         nmax--;
-        pl++;
-    } while (pl != p->p.rend() && (f < 0));
-    return std::pair<size_t, ParticleData>(nmax, p->p[nmax]);
+        pr++;
+        //getchar(); 
+    } while (pr != (p->p.rend()) && (f < 0));
+    //std::cout << "n = " << nmax + 1 << " f = " << f << std::endl;
+    return std::pair<size_t, ParticleData>(nmax + 1, p->p[nmax + 1 - nmin]);
 }
 
 std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p, 
@@ -180,27 +198,27 @@ std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p,
                                                     const double &dt    ) 
 {
     ParticleData result;
-    std::vector<ParticleData>::reverse_iterator pl = p->p.rbegin();
-    std::vector<ParticleData>::iterator pr = p->p.begin();
+    std::vector<ParticleData>::iterator pl = p->p.begin();
+    std::vector<ParticleData>::reverse_iterator pr = p->p.rbegin();
     double ct(CL*t);
     double cdt(CL*dt);
-    size_t nmin(p->nmax - p->p.size());
+    size_t nmin(p->nmax - p->p.size() + 1);
     size_t nmax(p->nmax);
     size_t n;
     double f;
 
-    if ((f = (ct - nmax*cdt) - (r - pl->r).norm()) > 0) {
+    if ((f = (ct - nmax*cdt) - (r - pr->r).norm()) > 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
-    if ((f = (ct - nmin*cdt) - (r - pr->r).norm()) < 0) {
+    if ((f = (ct - nmin*cdt) - (r - pl->r).norm()) < 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
     size_t n2min = nmin;
     do {
         n = nmin / 2 + nmax / 2;
-        f = (ct - (n + n2min)*cdt) - (r - p->p[n].r).norm();
+        f = (ct - n*cdt) - (r - p->p[n - n2min].r).norm();
         if (f == 0) {
-            return std::pair<size_t, ParticleData>(n + n2min, p->p[n]);
+            return std::pair<size_t, ParticleData>(n + n2min, p->p[n - n2min]);
         }
         if (f > 0) {
             nmin = n;
@@ -208,7 +226,7 @@ std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p,
             nmax = n;
         }
     } while (nmax != nmin + 1);
-    return std::pair<size_t, ParticleData>(n2min + nmin, p->p[nmin]);
+    return std::pair<size_t, ParticleData>(n2min + nmin, p->p[nmin - n2min]);
 }
 
 std::pair<size_t, ParticleData> sm_bisection(   Particle *p, 
@@ -217,33 +235,35 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
                                                 const double &dt    ) 
 {
     ParticleData result;
-    std::vector<ParticleData>::reverse_iterator pl = p->p.rbegin();
-    std::vector<ParticleData>::iterator pr = p->p.begin();
+    std::vector<ParticleData>::iterator pl = p->p.begin();
+    std::vector<ParticleData>::reverse_iterator pr = p->p.rbegin();
     double ct(CL*t);
     double cdt(CL*dt);
-    size_t nmin = p->nmax - p->p.size();
-    size_t nmax = p->nmax;
+    size_t nmin(p->nmax - p->p.size() + 1);
+    size_t nmax(p->nmax);
     size_t n;
     double f;
 
-    if ((f = (ct - nmax*cdt) - (r - pl->r).norm()) > 0) {
+    if ((f = (ct - nmax*cdt) - (r - pr->r).norm()) > 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
-    if ((f = (ct - nmin*cdt) - (r - pr->r).norm()) < 0) {
+    if ((f = (ct - nmin*cdt) - (r - pl->r).norm()) < 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
     size_t n2min = nmin;
     do {
         n = nmin / 2 + nmax / 2;
-        f = (ct - (n + n2min)*cdt) - (r - p->p[n].r).norm();
+        f = (ct - n*cdt) - (r - p->p[n - n2min].r).norm();
         if (f == 0) {
-            return std::pair<size_t, ParticleData>(n + n2min, p->p[n]);
+            return std::pair<size_t, ParticleData>(n + n2min, p->p[n - n2min]);
         }
         if (f > 0) {
             nmin = n;
         } else {
             nmax = n;
         }
+        //std::cout << "nmin = " << nmin << "nmax = " << nmax << " f = " << f << std::endl;
+        //getchar(); 
     } while (nmax != nmin + 1);
 
     ParticleData *p1(&p->p[nmin]), *p2(&p->p[nmin + 1]);
@@ -378,6 +398,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
     } else {
         std::cout << "Particle for field out of time range!" << std::endl;
     }
+    getchar();
 }
 
 void test_sphere_method() {
@@ -398,9 +419,10 @@ void test_sphere_method() {
         pd.v = v0;
         ct += cdt;
         p.p.push_back(pd);
-        p.nmax++;
+        p.nmax = i;
         //std::cout << "r = " << pd.r << std::endl;
     }
+    std::cout << "nmax = " << p.nmax << std::endl;
 
     Vec3<double> r1 = Vec3<double>( 0.0, 0.01, 0.0);
     Vec3<double> r2 = Vec3<double>(0.01,  0.0, 0.0);
