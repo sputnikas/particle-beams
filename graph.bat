@@ -1,0 +1,3 @@
+gnuplot -e "FILENAME='test2';TERM='png';FONTSIZE=37;XMULT=1000;XMIN=0;XMAX=250;YMIN=-20;YMAX=20;WX=1416" xz.gp
+
+pause

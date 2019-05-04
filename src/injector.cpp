@@ -36,21 +36,24 @@ InjectorRectangleZ::InjectorRectangleZ( const Vec3<double> &center,
 }; 
 
 void InjectorRectangleZ::inject(std::vector<Particle*> &particles, const double &cdt, const size_t &nt) {
-    ParticleData p;
-    p.r.x = center.x - 0.5*wx + random()*wx;
-    p.r.y = center.y - 0.5*wy + random()*wy;
-    p.r.z = center.z + random()*vz*cdt;
-    p.v.x = 0;
-    p.v.y = 0;
-    p.v.z = vz;
-    p.a.x = 0;
-    p.a.y = 0;
-    p.a.z = 0;
-    Particle* result;
-    result->p.push_back(p);
-    result->type = ptype;
-    result->nmax = nt;
-    particles.push_back(result);
+    for (size_t i = 0; i<N; i++) {
+        ParticleData p;
+        p.r.x = center.x - 0.5*wx + random()*wx;
+        p.r.y = center.y - 0.5*wy + random()*wy;
+        p.r.z = center.z + random()*vz*cdt;
+        p.v.x = 0;
+        p.v.y = 0;
+        p.v.z = vz;
+        p.a.x = 0;
+        p.a.y = 0;
+        p.a.z = 0;
+        Particle* result = new Particle();
+        //result->p = std::vector<ParticleData>();
+        result->p.push_back(p);
+        result->type = ptype;
+        result->nmax = nt;
+        particles.push_back(result);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -86,21 +89,24 @@ InjectorRingZ::InjectorRingZ( const Vec3<double> &center,
 }; 
 
 void InjectorRingZ::inject(std::vector<Particle*> &particles, const double &cdt, const size_t &nt) {
-    ParticleData p;
-    double R = ra + (rb - ra)*random();
-    double phi = alpha0 + (alpha - alpha0)*random();
-    p.r.x = center.x + R*cos(phi);
-    p.r.y = center.y + R*sin(phi);
-    p.r.z = center.z + random()*vz*cdt;
-    p.v.x = 0;
-    p.v.y = 0;
-    p.v.z = vz;
-    p.a.x = 0;
-    p.a.y = 0;
-    p.a.z = 0;
-    Particle* result;
-    result->p.push_back(p);
-    result->type = ptype;
-    result->nmax = nt;
-    particles.push_back(result);
+    for (size_t i = 0; i<N; i++) {
+        ParticleData p;
+        double R = ra + (rb - ra)*random();
+        double phi = alpha0 + (alpha - alpha0)*random();
+        p.r.x = center.x + R*cos(phi);
+        p.r.y = center.y + R*sin(phi);
+        p.r.z = center.z + random()*vz*cdt;
+        p.v.x = 0;
+        p.v.y = 0;
+        p.v.z = vz;
+        p.a.x = 0;
+        p.a.y = 0;
+        p.a.z = 0;
+        Particle* result = new Particle();
+        result->p = std::vector<ParticleData>();
+        result->p.push_back(p);
+        result->type = ptype;
+        result->nmax = nt;
+        particles.push_back(result);
+    }
 };

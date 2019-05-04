@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 #include "vec3.h"
@@ -85,6 +86,9 @@ public:
     Vec3<double> r; // в [м]
     Vec3<double> v; // в единицах скорости света
     Vec3<double> a; // в [м^-1], то есть отнесённое к скорости света в квадрате
+
+    size_t load(std::ifstream &f);
+    size_t save(std::ofstream &f);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -97,12 +101,17 @@ public:
 
 class ParticleType {
 public:
+    size_t type;
+    ParticleType(const size_t &type);
+
     virtual ~ParticleType();
     virtual void field(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void potential(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) = 0;
+    virtual size_t load(std::ifstream &f) = 0;
+    virtual size_t save(std::ofstream &f) = 0;
 };
 
 class ParticleTypePoint : public ParticleType {
@@ -119,6 +128,8 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
+    size_t load(std::ifstream &f);
+    size_t save(std::ofstream &f);
 };
 
 class ParticleTypeSphere : public ParticleType {
@@ -136,6 +147,8 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
+    size_t load(std::ifstream &f);
+    size_t save(std::ofstream &f);
 };
 
 class ParticleTypeBall : public ParticleType {
@@ -153,6 +166,8 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
+    size_t load(std::ifstream &f);
+    size_t save(std::ofstream &f);
 };
 
 //////////////////////////////////////////////////////////////////////////////

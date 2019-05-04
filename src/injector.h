@@ -20,7 +20,7 @@ public:
 
     virtual ~Injector();
 
-    virtual void inject(std::vector<Particle*> &particles, const double cdt, const size_t &nt) = 0;
+    virtual void inject(std::vector<Particle*> &particles, const double &cdt, const size_t &nt) = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////

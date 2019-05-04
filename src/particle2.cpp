@@ -1,19 +1,32 @@
 #include "particle2.h"
 
+size_t ParticleData::load(std::ifstream &f) {
+    f >> r.x >> r.y >> r.z >> v.x >> v.y >> v.z >> a.x >> a.y >> a.z;
+    return 0;
+}
+
+size_t ParticleData::save(std::ofstream &f) {
+    f << r.x << " " << r.y << " " << r.z << " " <<
+         v.x << " " << v.y << " " << v.z << " " <<
+         a.x << " " << a.y << " " << a.z;
+    return 0;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // ParticleType
 // нужен чтобы хранить параметры общие свойства для групп частиц
 // поля в field прибавляются к текущему значению
 //////////////////////////////////////////////////////////////////////////////
 
+ParticleType::ParticleType(const size_t &type) : type(type) {}
 ParticleType::~ParticleType() {}
 
 //////////////////////////////////////////////////////////////////////////////
 // relativistic point type
 //////////////////////////////////////////////////////////////////////////////
 
-ParticleTypePoint::ParticleTypePoint() : q(EQ), m(EM) {}
-ParticleTypePoint::ParticleTypePoint(const double &q, const double &m) : q(q), m(m) {}
+ParticleTypePoint::ParticleTypePoint() : ParticleType(0), q(EQ), m(EM), qpm(EQ/EM) {}
+ParticleTypePoint::ParticleTypePoint(const double &q, const double &m) : ParticleType(0), q(q), m(m), qpm(q/m) {}
 
 void ParticleTypePoint::field(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) {
     Vec3<double> R = r - p.r;
@@ -61,15 +74,25 @@ void ParticleTypePoint::potentialN(Vec3<double> &A, double &phi, const ParticleD
 }
 
 Vec3<double> ParticleTypePoint::forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) {
-    return qpm*(E + v.cross(B));
+    return qpm*(E + v.cross(B))/CL2;
+}
+
+size_t ParticleTypePoint::load(std::ifstream &f) {
+    f >> q >> m >> qpm;
+    return 0;
+}
+
+size_t ParticleTypePoint::save(std::ofstream &f) {
+    f << q << " " << m << " " << qpm;
+    return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // relativistic ball type
 //////////////////////////////////////////////////////////////////////////////
 
-ParticleTypeBall::ParticleTypeBall() : q(EQ), m(EM) {}
-ParticleTypeBall::ParticleTypeBall(const double &q, const double &m, const double &radius) : q(q), m(m), radius(radius) {}
+ParticleTypeBall::ParticleTypeBall() : ParticleType(1), q(EQ), m(EM), qpm(EQ/EM), radius(RL) {}
+ParticleTypeBall::ParticleTypeBall(const double &q, const double &m, const double &radius) : ParticleType(1), q(q), m(m), qpm(q/m), radius(radius) {}
 
 void ParticleTypeBall::field(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) {
     Vec3<double> R = r - p.r;
@@ -143,7 +166,17 @@ void ParticleTypeBall::potentialN(Vec3<double> &A, double &phi, const ParticleDa
 }
 
 Vec3<double> ParticleTypeBall::forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) {
-    return qpm*(E + v.cross(B));
+    return qpm*(E + v.cross(B))/CL2;
+}
+
+size_t ParticleTypeBall::load(std::ifstream &f) {
+    f >> q >> m >> qpm >> radius;
+    return 0;
+}
+
+size_t ParticleTypeBall::save(std::ofstream &f) {
+    f << q << " " << m << " " << qpm << " " << radius;
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,11 +210,11 @@ std::pair<size_t, ParticleData> sm_left_intervals(  Particle *p,
     if ((f = (ct - nmin*cdt) - (r - pl->r).norm()) < 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
-    std::cout << "n = " << nmin << " f = " << f << std::endl;
+    //std::cout << "n = " << nmin << " f = " << f << std::endl;
     if ((f = (ct - nmax*cdt) - (r - pr->r).norm()) > 0) {
         return std::pair<int, ParticleData>(-1, result);
     }
-    std::cout << "n = " << nmax << " f = " << f << std::endl;
+    //std::cout << "n = " << nmax << " f = " << f << std::endl;
     do {
         f = (ct - nmax*cdt) - (r - pr->r).norm();
         nmax--;
@@ -215,7 +248,7 @@ std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p,
     }
     size_t n2min = nmin;
     do {
-        n = nmin / 2 + nmax / 2;
+        n = ((nmin + nmax) % 2 == 0) ? (nmin + nmax)/2 : nmin/2 + nmax/2;
         f = (ct - n*cdt) - (r - p->p[n - n2min].r).norm();
         if (f == 0) {
             return std::pair<size_t, ParticleData>(n + n2min, p->p[n - n2min]);
@@ -252,7 +285,7 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
     }
     size_t n2min = nmin;
     do {
-        n = nmin / 2 + nmax / 2;
+        n = ((nmin + nmax) % 2 == 0) ? (nmin + nmax)/2 : nmin/2 + nmax/2;
         f = (ct - n*cdt) - (r - p->p[n - n2min].r).norm();
         if (f == 0) {
             return std::pair<size_t, ParticleData>(n + n2min, p->p[n - n2min]);
@@ -266,7 +299,7 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
         //getchar(); 
     } while (nmax != nmin + 1);
 
-    ParticleData *p1(&p->p[nmin]), *p2(&p->p[nmin + 1]);
+    ParticleData *p1(&(p->p[nmin - n2min])), *p2(&(p->p[nmin + 1 - n2min]));
     double cdt2 =  cdt*cdt;
     double cdt3 = cdt2*cdt;
     double cdt4 = cdt3*cdt;
@@ -275,7 +308,6 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
     Vec3<double> A3(  10.*(p2->r - p1->r)/cdt3 - (4.*p2->v + 6.*p1->v)/cdt2 + (0.5*p2->a - 1.5*p1->a)/cdt);
     Vec3<double> A4(- 15.*(p2->r - p1->r)/cdt4 + (7.*p2->v + 8.*p1->v)/cdt3 - (    p2->a - 1.5*p1->a)/cdt2);
     Vec3<double> A5(   6.*(p2->r - p1->r)/cdt5 - 3.*(p2->v +    p1->v)/cdt4 + 0.5*(p2->a -     p1->a)/cdt3);
-    ParticleData rl(*p1), rr(*p2);
     double dl = 0, dr = 1, d, d2, d3, d4, d5;
     do {
         d = (dl + dr)/2;
@@ -296,6 +328,13 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
     } while (dr - dl > e);
     result.v = p1->v + p1->a*d*cdt +  3.*A3*d2*cdt2 +  4.*A4*d3*cdt3 + 5.*A5*d4*cdt4;
     result.a = p1->a + 6.*A3*d*cdt + 12.*A4*d2*cdt2 + 20.*A5*d3*cdt3;
+    
+    if (result.v.norm2() > 1) {
+        std::cout << "\nnmin = " << nmin << ": " << p1->r << p1->v << p1->a << std::endl;
+        std::cout << "nmax = " << nmax << ": " << p2->r << p2->v << p2->a << std::endl;
+        std::cout << result.r << result.v << result.a << std::endl;
+        getchar();
+    }
     return std::pair<size_t, ParticleData>(n2min + nmin, result);
 }
 

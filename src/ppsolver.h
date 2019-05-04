@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <fstream>
 
 #include "vec3.h"
 #include "particle2.h"
@@ -24,7 +26,7 @@ public:
     std::vector<ParticleType*> particle_types;
     std::vector<Injector*>     injectors;
     std::vector<ExternField*>  extern_fields;
-    size_t (*field_interaction)(Vec3<double> &Ei, Vec3<double> &Bi, const std::vector<Particle*>::iterator &i);
+    int (PPSolver::*field_interaction)(Vec3<double> &Ei, Vec3<double> &Bi, const std::vector<Particle*>::iterator &i);
     size_t interaction_type;
     size_t sphere_method;
     size_t number_method;
@@ -35,13 +37,19 @@ public:
     double ct;
 
     int in_spaces(const Vec3<double> r1, const Vec3<double> r2);
+    int field_interaction0(Vec3<double> &Ei, Vec3<double> &Bi, const std::vector<Particle*>::iterator &i);
     int field_interaction1(Vec3<double> &Ei, Vec3<double> &Bi, const std::vector<Particle*>::iterator &i);
     int field_extern(Vec3<double> &Ee, Vec3<double> &Be, const Vec3<double> &r, const double &t);
-    ParticleData euler(const std::vector<Particle*>::iterator &i);
-    ParticleData euler_u(const std::vector<Particle*>::iterator &i);
-    ParticleData runge4v_mistake(const std::vector<Particle*>::iterator &i);
-    ParticleData runge4u_mistake(const std::vector<Particle*>::iterator &i);
-    ParticleData adams_bashfort4_v(const std::vector<Particle*>::iterator &i);
-    ParticleData adams_bashfort4_u(const std::vector<Particle*>::iterator &i);
+    ParticleData euler(std::vector<Particle*>::iterator &i);
+    ParticleData euler_u(std::vector<Particle*>::iterator &i);
+    ParticleData runge4v_mistake(std::vector<Particle*>::iterator &i);
+    ParticleData runge4u_mistake(std::vector<Particle*>::iterator &i);
+    ParticleData adams_bashfort4_v(std::vector<Particle*>::iterator &i);
+    ParticleData adams_bashfort4_u(std::vector<Particle*>::iterator &i);
     size_t calc();
+    
+    size_t load(const std::string &filename);
+    size_t save(const std::string &filename);
+    size_t save(const std::string &filename, const size_t &n);
+    void free();
 };
