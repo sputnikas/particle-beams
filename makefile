@@ -24,7 +24,9 @@ $(OBJDIR)%.o: %.cpp %.h
 
 clean:
 	rm -f $(addprefix $(OBJDIR), $(OBJ)) $(EXE)
-	
+
+cleanall:
+	rm -f $(addprefix $(OBJDIR), $(OBJ)) $(EXE)
 
 asm : asmdir $(addprefix $(ASMDIR), $(ASM))
 	

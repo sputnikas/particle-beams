@@ -1,6 +1,6 @@
 #include "ppsolver.h"
 
-std::ofstream fd;
+//std::ofstream fd;
 
 int PPSolver::in_spaces(const Vec3<double> r1, const Vec3<double> r2) {
     for (std::vector<Space3d*>::iterator i = spaces.begin(); i != spaces.end(); i++) {
@@ -366,10 +366,7 @@ size_t PPSolver::calcOMP() {
 size_t PPSolver::save(const std::string &filename) {
     //std::cout << "0" << std::endl;
     std::cout << "0" << std::endl;
-    if (fd.is_open()) {
-        fd.close();
-    }
-    fd.open(filename.c_str(), std::ofstream::out);
+    std::ofstream fd(filename.c_str(), std::ios::app);
     if (fd.is_open()) {
         //std::cout << "01" << std::endl;
         int s = 0;
@@ -441,8 +438,7 @@ size_t PPSolver::load(const std::string &filename) {
 }
 
 size_t PPSolver::save(const std::string &filename, const size_t &n) {
-    //std::ofstream fd(filename);
-    fd.open(filename, std::ofstream::out | std::ofstream::app);
+    std::ofstream fd(filename, std::ofstream::app);
     for (std::vector<Particle*>::iterator i = particles.begin(); i != particles.end(); i++) {
         if (((*i)->nmax >= n) && (n > (*i)->nmax - (*i)->p.size())) {
             size_t index = n - (*i)->nmax + (*i)->p.size() - 1;

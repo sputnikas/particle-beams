@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-	std::string filename("test.dat");
+	std::string filename = "test.dat";
     std::string filename2("test2.dat");
     std::cout << filename << std::endl;
 
@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
 
     for (size_t i = 0; i<n; i++) {
         //std::cout << i << std::endl;
-        
+
         //getchar();
         std::cout << i << ": " << pp.calcOMP() << std::endl;
     }
-	
+
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     std::cout << (t2 - t1).count()/1e9 << "seconds" << std::endl;
     pp.save(filename);
