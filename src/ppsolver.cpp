@@ -1,5 +1,7 @@
 #include "ppsolver.h"
 
+std::ofstream fd;
+
 int PPSolver::in_spaces(const Vec3<double> r1, const Vec3<double> r2) {
     for (std::vector<Space3d*>::iterator i = spaces.begin(); i != spaces.end(); i++) {
         if ((*i)->include(r1) && (*i)->include(r2)) {
@@ -362,30 +364,33 @@ size_t PPSolver::calcOMP() {
 }
 
 size_t PPSolver::save(const std::string &filename) {
+    //std::cout << "0" << std::endl;
     std::cout << "0" << std::endl;
-    std::ofstream f;
-    f.open(filename.c_str());
-    if (f.is_open()) {
-        std::cout << "01" << std::endl;
+    if (fd.is_open()) {
+        fd.close();
+    }
+    fd.open(filename.c_str(), std::ofstream::out);
+    if (fd.is_open()) {
+        //std::cout << "01" << std::endl;
         int s = 0;
         for (std::vector<Particle*>::iterator i = particles.begin(); i != particles.end(); i++) {
-            std::cout << "1" << std::endl;
-            f << "# " << (*i)->nmax << " " << (*i)->p.size() << " " << (*i)->type->type << " ";
-            std::cout << "2" << std::endl;
-            (*i)->type->save(f);
-            std::cout << "3" << std::endl;
-            f << std::endl;
+            //std::cout << "1" << std::endl;
+            fd << "# " << (*i)->nmax << " " << (*i)->p.size() << " " << (*i)->type->type << " ";
+            //std::cout << "2" << std::endl;
+            (*i)->type->save(fd);
+            //std::cout << "3" << std::endl;
+            fd << std::endl;
             int k = 0;
             for (std::vector<ParticleData>::iterator j = (*i)->p.begin(); j != (*i)->p.end(); j++) {
-                j->save(f);
-                f << "\n";
+                j->save(fd);
+                fd << "\n";
                 k++;
             }
             s++;
-            std::cout << "Particle number: " << s << " n step: " << k << std::endl;
-            f << std::endl;
+            //std::cout << "Particle number: " << s << " n step: " << k << std::endl;
+            fd << std::endl;
         }
-        f.close();
+        fd.close();
     } else {
         std::cout << "error opening file" << std::endl;
     }
@@ -393,7 +398,7 @@ size_t PPSolver::save(const std::string &filename) {
 }
 
 size_t PPSolver::load(const std::string &filename) {
-    // std::ifstream f(filename);
+    // std::ifstream fd(filename);
     // char c;
     // size_t type;
     // size_t ntype;
@@ -401,53 +406,54 @@ size_t PPSolver::load(const std::string &filename) {
     // ParticleData p;
     // Particle *ps;
     // ParticleType *ptype;
-    // while (f.eof() == 0) {
-    //     f >> c;
+    // while (fd.eof() == 0) {
+    //     fd >> c;
     //     if (c == '#') {
-    //         f >> ntype;
+    //         fd >> ntype;
     //         while (ntype > 0) {
-    //             f >> c;
+    //             fd >> c;
 
     //             ntype--;
     //         }
     //     }
     //     ps = new Particle();
     //     if (c == '#') {
-    //         f >> ps->nmax >> size >> type;
+    //         fd >> ps->nmax >> size >> type;
     //         if (type == 0) {
     //             ptype = new ParticleTypePoint();
-    //             ptype->load(f);
+    //             ptype->load(fd);
     //         }
     //         if (type == 1) {
     //             ptype = new ParticleTypeBall();
-    //             ptype->load(f);
+    //             ptype->load(fd);
     //         }
     //         std::cout << "nmax = " << ps->nmax << " size = " << size << std::endl;
     //         for (size_t i = 0; i<size; i++) {
-    //             f >> p.r.x >> p.r.y >> p.r.z >> 
+    //             fd >> p.r.x >> p.r.y >> p.r.z >> 
     //                  p.v.x >> p.v.y >> p.v.z >>
     //                  p.a.x >> p.a.y >> p.a.z;
     //             ps->
     //         }
     //     }
     // }
-    // f.close();
+    // fd.close();
     return 0;
 }
 
 size_t PPSolver::save(const std::string &filename, const size_t &n) {
-    std::ofstream f(filename);
+    //std::ofstream fd(filename);
+    fd.open(filename, std::ofstream::out | std::ofstream::app);
     for (std::vector<Particle*>::iterator i = particles.begin(); i != particles.end(); i++) {
         if (((*i)->nmax >= n) && (n > (*i)->nmax - (*i)->p.size())) {
             size_t index = n - (*i)->nmax + (*i)->p.size() - 1;
             std::vector<ParticleData>::reference p = (*i)->p.at(index);
-            f << n*dt << " " << p.r.x << " " << p.r.y << " " << p.r.z << 
+            fd << n*dt << " " << p.r.x << " " << p.r.y << " " << p.r.z << 
                          " " << p.v.x << " " << p.v.y << " " << p.v.z <<
                          " " << p.a.x << " " << p.a.y << " " << p.a.z << "\n";
         }
     }
-    f << std::endl;
-    f.close();
+    fd << std::endl;
+    fd.close();
     return n;
 }
 

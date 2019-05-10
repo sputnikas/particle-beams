@@ -50,3 +50,5 @@
 *.pdb
 *.tlog
 *.lastbuildstate
+*.depend
+*.opendb

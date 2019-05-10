@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     pp.spaces.push_back(space3d);
     pp.particle_types.push_back(ptype);
     pp.injectors.push_back(injector);
-    pp.number_method = 4;
+    pp.number_method = 3;
     pp.field_interaction = &PPSolver::field_interaction1;
     pp.interaction_type = 0;
     pp.sphere_method = 0;
@@ -59,11 +59,11 @@ int main(int argc, char *argv[])
     }
 	
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::cout << (t2 - t1).count()*1e9 << "seconds" << std::endl;
+    std::cout << (t2 - t1).count()/1e9 << "seconds" << std::endl;
     pp.save(filename);
-    std::cout << "We are in function" << std::endl;
+    //std::cout << "We are in function" << std::endl;
     pp.save(filename2, n);
-    std::cout << "We are in function" << std::endl;
+    //std::cout << "We are in function" << std::endl;
     pp.free();
 
 	return 0;
