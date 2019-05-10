@@ -309,24 +309,86 @@ size_t PPSolver::calc() {
     return result;
 }
 
-size_t PPSolver::save(const std::string &filename) {
-    std::ofstream f(filename);
-    int s = 0;
-    for (std::vector<Particle*>::iterator i = particles.begin(); i != particles.end(); i++) {
-        f << "# " << (*i)->nmax << " " << (*i)->p.size() << " " << (*i)->type->type << " ";
-        (*i)->type->save(f);
-        f << std::endl;
-        int k = 0;
-        for (std::vector<ParticleData>::iterator j = (*i)->p.begin(); j != (*i)->p.end(); j++) {
-            j->save(f);
-            f << "\n";
-            k++;
-        }
-        s++;
-        //std::cout << "Particle number: " << s << " n step: " << k << std::endl;
-        f << std::endl;
+size_t PPSolver::calcOMP() {
+    nt++;
+    t += dt;
+    ct += cdt;
+    size_t result = 0;
+    for (std::vector<Injector*>::iterator i = injectors.begin(); i != injectors.end(); i++) {
+        //std::cout << "injectors.size() = " << injectors.size() << std::endl;
+        (*i)->inject(particles, cdt, nt);
     }
-    f.close();
+    
+    //std::cout << "We are in function" << std::endl;
+    if (number_method < RUNGE4V) {
+        #pragma omp parallel for schedule(guided) shared(result)
+        for (int s = 0; s<(int) particles.size(); s++) {
+            std::vector<Particle*>::iterator i = particles.begin() + s;
+            ParticleData p;
+            switch (number_method) {
+            case EULER:
+                p = euler(i);
+                break;
+            case EULER_U:
+                p = euler_u(i);
+                break;
+            case RUNGE4V_MISTAKE:
+                p = runge4v_mistake(i);
+                break;
+            case RUNGE4U_MISTAKE:
+                p = runge4u_mistake(i);
+                break;
+            case ADAMS_BASHFORT4_V:
+                p = adams_bashfort4_v(i);
+                break;
+            case ADAMS_BASHFORT4_U:
+                p = adams_bashfort4_u(i);
+                break;
+            }
+            int inspace = 0;
+            for (std::vector<Space3d*>::iterator j = spaces.begin(); j != spaces.end(); j++) {
+                inspace += (*j)->include(p.r);
+            }
+            if (inspace != 0) {
+                result++;
+                (*i)->nmax = nt;
+                (*i)->p.push_back(p);
+            }
+        }
+    } else {
+
+    }
+    return result;
+}
+
+size_t PPSolver::save(const std::string &filename) {
+    std::cout << "0" << std::endl;
+    std::ofstream f;
+    f.open(filename.c_str());
+    if (f.is_open()) {
+        std::cout << "01" << std::endl;
+        int s = 0;
+        for (std::vector<Particle*>::iterator i = particles.begin(); i != particles.end(); i++) {
+            std::cout << "1" << std::endl;
+            f << "# " << (*i)->nmax << " " << (*i)->p.size() << " " << (*i)->type->type << " ";
+            std::cout << "2" << std::endl;
+            (*i)->type->save(f);
+            std::cout << "3" << std::endl;
+            f << std::endl;
+            int k = 0;
+            for (std::vector<ParticleData>::iterator j = (*i)->p.begin(); j != (*i)->p.end(); j++) {
+                j->save(f);
+                f << "\n";
+                k++;
+            }
+            s++;
+            std::cout << "Particle number: " << s << " n step: " << k << std::endl;
+            f << std::endl;
+        }
+        f.close();
+    } else {
+        std::cout << "error opening file" << std::endl;
+    }
     return 0;
 }
 

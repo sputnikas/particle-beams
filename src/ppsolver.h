@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 
+#include <omp.h>
+
 #include "vec3.h"
 #include "particle2.h"
 #include "injector.h"
@@ -47,6 +49,7 @@ public:
     ParticleData adams_bashfort4_v(std::vector<Particle*>::iterator &i);
     ParticleData adams_bashfort4_u(std::vector<Particle*>::iterator &i);
     size_t calc();
+    size_t calcOMP();
     
     size_t load(const std::string &filename);
     size_t save(const std::string &filename);

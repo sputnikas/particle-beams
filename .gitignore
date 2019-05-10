@@ -40,3 +40,13 @@
 *.app
 
 *.png
+*.db
+*.idb
+*.filters
+
+*.suo
+*.ilk
+*.log
+*.pdb
+*.tlog
+*.lastbuildstate

@@ -43,7 +43,7 @@ public:
     virtual ~Expression();
     // Основные функции - 
     virtual double Calc() = 0;
-    virtual Expression Calc(std::vector<std::tuple<std::string, Expression*>>) = 0;
+    //virtual Expression Calc(std::vector<std::tuple<std::string, Expression*>>);
     virtual std::string Print(int level = 0) = 0;
     // Генерация деревьев выражений
     static std::string PrepareR(std::string expr);

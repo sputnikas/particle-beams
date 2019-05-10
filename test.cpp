@@ -26,7 +26,7 @@ int main() {
     pp.particle_types.push_back(ptype);
     pp.injectors.push_back(injector);
     pp.number_method = 1;
-    pp.field_interaction = &pp.field_interaction0;
+    pp.field_interaction = &PPSolver::field_interaction0;
     pp.nt = 0;
     pp.t = 0.0;
 

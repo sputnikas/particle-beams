@@ -2,6 +2,9 @@
 
 int main(int argc, char *argv[])
 {
+    unsigned NUM_THREADS = 1;
+    omp_set_num_threads(NUM_THREADS);
+    srand((unsigned) time(NULL));
 	std::cout << "pbeams - program for calculation particle beams in diferent systems" << std::endl;
 	#ifdef HAS_TEST
 		// test_vec3();
@@ -10,6 +13,9 @@ int main(int argc, char *argv[])
 		// test_expression();
 		// test_number_method();
 	#endif // HAS_TEST
+
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+
 	std::string filename("test.dat");
     std::string filename2("test2.dat");
     std::cout << filename << std::endl;
@@ -19,7 +25,7 @@ int main(int argc, char *argv[])
     double By = CL*1;
     double vz = 0.8;
     double Ex = vz*By;
-    size_t n = 100;
+    size_t n = 30;
     double wx = 1e-2;
     double wy = 1e-2;
     size_t N = 30;
@@ -35,8 +41,8 @@ int main(int argc, char *argv[])
     pp.spaces.push_back(space3d);
     pp.particle_types.push_back(ptype);
     pp.injectors.push_back(injector);
-    pp.number_method = 3;
-    pp.field_interaction = &pp.field_interaction1;
+    pp.number_method = 4;
+    pp.field_interaction = &PPSolver::field_interaction1;
     pp.interaction_type = 0;
     pp.sphere_method = 0;
     pp.nt = 0;
@@ -49,12 +55,16 @@ int main(int argc, char *argv[])
         //std::cout << i << std::endl;
         
         //getchar();
-        std::cout << i << ": " << pp.calc() << std::endl;
+        std::cout << i << ": " << pp.calcOMP() << std::endl;
     }
 	
-    //std::cout << "We are in function" << std::endl;
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::cout << (t2 - t1).count()*1e9 << "seconds" << std::endl;
     pp.save(filename);
+    std::cout << "We are in function" << std::endl;
     pp.save(filename2, n);
+    std::cout << "We are in function" << std::endl;
     pp.free();
+
 	return 0;
 }

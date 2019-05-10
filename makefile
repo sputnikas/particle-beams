@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = -c -Wall -O0
-LDFLAGS = 
+CFLAGS = -c -Wall -O3 -g -fopenmp
+LDFLAGS = -g -fopenmp
 DEFINES = -DHAS_TEST #-DHAS_TEST_CONSTRUCTOR
 SRC = main.cpp src/vec2.cpp src/vec3.cpp src/particle2.cpp src/pmath.cpp src/extern_field.cpp src/injector.cpp src/space3d.cpp src/ppsolver.cpp
 HDR = $(SRC:.cpp=.h)
