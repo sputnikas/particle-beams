@@ -40,6 +40,7 @@ public:
     double rho;
     double kgeq;
 
+    InjectorRectangleZ();
     InjectorRectangleZ( const double &wx, 
                         const double &wy, 
                         const double &vz, 
@@ -80,6 +81,7 @@ public:
     double rho;
     double kgeq;
 
+    InjectorRingZ();
     InjectorRingZ(  const double &ra,
                     const double &rb,
                     const double &alpha0,

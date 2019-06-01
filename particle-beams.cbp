@@ -4,25 +4,68 @@
 	<Project>
 		<Option title="particle-beams" />
 		<Option makefile="makefile" />
+		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Release">
+			<Target title="pbeams">
 				<Option output="bin/particle-beams" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-std=c11" />
+					<Add option="-g -fopenmp" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
+					<Add option="-g -fopenmp" />
+				</Linker>
+			</Target>
+			<Target title="all">
+				<Option output="bin/test" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-std=c11" />
+					<Add option="-g -fopenmp" />
+				</Compiler>
+				<Linker>
+					<Add option="-g -fopenmp" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="main.cpp" />
+		<Unit filename="main.h" />
+		<Unit filename="src/dev/number_method.cpp" />
+		<Unit filename="src/dev/number_method.h" />
+		<Unit filename="src/dev/sketch.h" />
+		<Unit filename="src/expression.cpp" />
+		<Unit filename="src/expression.h" />
+		<Unit filename="src/extern_field.cpp" />
+		<Unit filename="src/extern_field.h" />
+		<Unit filename="src/injector.cpp" />
+		<Unit filename="src/injector.h" />
+		<Unit filename="src/particle.h" />
+		<Unit filename="src/particle2.cpp" />
+		<Unit filename="src/particle2.h" />
+		<Unit filename="src/pmath.cpp" />
+		<Unit filename="src/pmath.h" />
+		<Unit filename="src/ppsolver.cpp" />
+		<Unit filename="src/ppsolver.h" />
+		<Unit filename="src/space3d.cpp" />
+		<Unit filename="src/space3d.h" />
+		<Unit filename="src/vec2.cpp" />
+		<Unit filename="src/vec2.h" />
+		<Unit filename="src/vec3.cpp" />
+		<Unit filename="src/vec3.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

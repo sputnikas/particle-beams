@@ -38,9 +38,9 @@ InjectorRectangleZ::InjectorRectangleZ( const Vec3<double> &center,
 void InjectorRectangleZ::inject(std::vector<Particle*> &particles, const double &cdt, const size_t &nt) {
     for (size_t i = 0; i<N; i++) {
         ParticleData p;
-        p.r.x = center.x - 0.5*wx + random()*wx;
-        p.r.y = center.y - 0.5*wy + random()*wy;
-        p.r.z = center.z + random()*vz*cdt;
+        p.r.x = center.x - 0.5*wx + pb::random()*wx;
+        p.r.y = center.y - 0.5*wy + pb::random()*wy;
+        p.r.z = center.z + pb::random()*vz*cdt;
         p.v.x = 0;
         p.v.y = 0;
         p.v.z = vz;
@@ -60,6 +60,11 @@ void InjectorRectangleZ::inject(std::vector<Particle*> &particles, const double 
 // InjectorRingZ Implementation
 //////////////////////////////////////////////////////////////////////////////
 
+InjectorRingZ::InjectorRingZ() :
+    Injector(1), center(Vec3<double>()), ra(0), rb(0), alpha0(0), alpha(0), vz(0), N(0), ptype(NULL), I(0), rho(0), kgeq(0)
+{
+};
+
 InjectorRingZ::InjectorRingZ( const double &ra,
                               const double &rb,
                               const double &alpha0,
@@ -70,9 +75,10 @@ InjectorRingZ::InjectorRingZ( const double &ra,
                               const double &I, 
                               const double &rho, 
                               const double &kgeq) :
-    Injector(0), center(Vec3<double>()), ra(ra), rb(rb), alpha0(alpha0), alpha(alpha), vz(vz), N(N), ptype(ptype), I(I), rho(rho), kgeq(kgeq)
+    Injector(1), center(Vec3<double>()), ra(ra), rb(rb), alpha0(alpha0), alpha(alpha), vz(vz), N(N), ptype(ptype), I(I), rho(rho), kgeq(kgeq)
 {
 };
+
 InjectorRingZ::InjectorRingZ( const Vec3<double> &center,
                               const double &ra,
                               const double &rb,
@@ -84,18 +90,18 @@ InjectorRingZ::InjectorRingZ( const Vec3<double> &center,
                               const double &I, 
                               const double &rho, 
                               const double &kgeq) :
-    Injector(0), center(center), ra(ra), rb(rb), alpha0(alpha0), alpha(alpha), vz(vz), N(N), ptype(ptype), I(I), rho(rho), kgeq(kgeq)
+    Injector(1), center(center), ra(ra), rb(rb), alpha0(alpha0), alpha(alpha), vz(vz), N(N), ptype(ptype), I(I), rho(rho), kgeq(kgeq)
 {
 }; 
 
 void InjectorRingZ::inject(std::vector<Particle*> &particles, const double &cdt, const size_t &nt) {
     for (size_t i = 0; i<N; i++) {
         ParticleData p;
-        double R = ra + (rb - ra)*random();
-        double phi = alpha0 + (alpha - alpha0)*random();
+        double R = ra + (rb - ra)*pb::random();
+        double phi = alpha0 + (alpha - alpha0)*pb::random();
         p.r.x = center.x + R*cos(phi);
         p.r.y = center.y + R*sin(phi);
-        p.r.z = center.z + random()*vz*cdt;
+        p.r.z = center.z + pb::random()*vz*cdt;
         p.v.x = 0;
         p.v.y = 0;
         p.v.z = vz;

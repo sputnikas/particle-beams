@@ -6,7 +6,7 @@ SRC = main.cpp src/vec2.cpp src/vec3.cpp src/particle2.cpp src/pmath.cpp src/ext
 HDR = $(SRC:.cpp=.h)
 OBJ = $(SRC:.cpp=.o)
 OBJDIR = obj/
-EXE = bin/test.exe
+EXE = bin/test2.exe
 ASM = $(SRC:.cpp=.s)
 ASMDIR = asm/
 

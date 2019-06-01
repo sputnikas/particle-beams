@@ -47,7 +47,7 @@ inline Vec3<double> forcepm(const Vec3<double> &acceleration, const Vec3<double>
 // Particle
 // После долгих размышлений появилась одна идея:
 //      частицы, должны быть упорядочены во временной массив!
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
@@ -87,8 +87,10 @@ public:
     Vec3<double> v; // в единицах скорости света
     Vec3<double> a; // в [м^-1], то есть отнесённое к скорости света в квадрате
 
-    size_t load(std::ifstream &f);
-    size_t save(std::ofstream &f);
+    size_t load(std::istream &f);
+    size_t save(std::ostream &f);
+    size_t load(char *f);
+    size_t save(FILE *f);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -98,6 +100,13 @@ public:
 // E и B измеряются в [В/м], то есть вместо B рассматривается произведение cB
 // A и phi измеряются в [В], то есть вместо A рассматривается Ac
 //////////////////////////////////////////////////////////////////////////////
+
+enum PARTICLE_TYPES {
+    PARTICLE_TYPE_POINT,
+    PARTICLE_TYPE_BALL,
+    PARTICLE_TYPE_SPHERE,
+    PARTICLE_TYPE_NUMBER
+};
 
 class ParticleType {
 public:
@@ -110,8 +119,10 @@ public:
     virtual void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r) = 0;
     virtual Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v) = 0;
-    virtual size_t load(std::ifstream &f) = 0;
-    virtual size_t save(std::ofstream &f) = 0;
+    virtual size_t load(std::istream &f) = 0;
+    virtual size_t save(std::ostream &f) = 0;
+    virtual size_t load(char *f) = 0;
+    virtual size_t save(FILE *f) = 0;
 };
 
 class ParticleTypePoint : public ParticleType {
@@ -119,7 +130,7 @@ public:
     double q;
     double m;
     double qpm;
-    
+
     ParticleTypePoint();
     ParticleTypePoint(const double &q, const double &m);
 
@@ -128,8 +139,10 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
-    size_t load(std::ifstream &f);
-    size_t save(std::ofstream &f);
+    size_t load(std::istream &f);
+    size_t save(std::ostream &f);
+    size_t load(char *f);
+    size_t save(FILE *f);
 };
 
 class ParticleTypeSphere : public ParticleType {
@@ -147,8 +160,10 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
-    size_t load(std::ifstream &f);
-    size_t save(std::ofstream &f);
+    size_t load(std::istream &f);
+    size_t save(std::ostream &f);
+    size_t load(char *f);
+    size_t save(FILE *f);
 };
 
 class ParticleTypeBall : public ParticleType {
@@ -166,8 +181,10 @@ public:
     void fieldN(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r);
     void potentialN(Vec3<double> &A, double &phi, const ParticleData &p, const Vec3<double> &r);
     Vec3<double> forcePm(const Vec3<double> &E, const Vec3<double> &B, const Vec3<double> &v);
-    size_t load(std::ifstream &f);
-    size_t save(std::ofstream &f);
+    size_t load(std::istream &f);
+    size_t save(std::ostream &f);
+    size_t load(char *f);
+    size_t save(FILE *f);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -185,15 +202,15 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Sphere method 
+// Sphere method
 // Различные реализации метода сфер
 // - метод интервалов
 // - метод бисекции
 // - метод бисекции с уточнением
 ///////////////////////////////////////////////////////////////////////////////
 
-std::pair<size_t, ParticleData> sm_left_intervals(Particle *p, const Vec3<double> &r, const double &t, const double &dt); 
-std::pair<size_t, ParticleData> sm_left_bisection(Particle *p, const Vec3<double> &r, const double &t, const double &dt); 
+std::pair<size_t, ParticleData> sm_left_intervals(Particle *p, const Vec3<double> &r, const double &t, const double &dt);
+std::pair<size_t, ParticleData> sm_left_bisection(Particle *p, const Vec3<double> &r, const double &t, const double &dt);
 std::pair<size_t, ParticleData> sm_bisection(Particle *p, const Vec3<double> &r, const double &t, const double &dt);
 // Тестирование метода сфер
 void test_sphere_method();

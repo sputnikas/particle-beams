@@ -1,14 +1,24 @@
 #include "particle2.h"
 
-size_t ParticleData::load(std::ifstream &f) {
+size_t ParticleData::load(std::istream &f) {
     f >> r.x >> r.y >> r.z >> v.x >> v.y >> v.z >> a.x >> a.y >> a.z;
     return 0;
 }
 
-size_t ParticleData::save(std::ofstream &f) {
+size_t ParticleData::save(std::ostream &f) {
     f << r.x << " " << r.y << " " << r.z << " " <<
          v.x << " " << v.y << " " << v.z << " " <<
          a.x << " " << a.y << " " << a.z;
+    return 0;
+}
+
+size_t ParticleData::load(char *f) {
+    sscanf(f, "%le %le %le %le %le %le %le %le %le", &r.x, &r.y, &r.z, &v.x, &v.y, &v.z, &a.x, &a.y, &a.z);
+    return 0;
+}
+
+size_t ParticleData::save(FILE *f) {
+    fprintf(f, "%le %le %le %le %le %le %le %le %le", r.x, r.y, r.z, v.x, v.y, v.z, a.x, a.y, a.z);
     return 0;
 }
 
@@ -26,7 +36,7 @@ ParticleType::~ParticleType() {}
 //////////////////////////////////////////////////////////////////////////////
 
 ParticleTypePoint::ParticleTypePoint() : ParticleType(0), q(EQ), m(EM), qpm(EQ/EM) {}
-ParticleTypePoint::ParticleTypePoint(const double &q, const double &m) : ParticleType(0), q(q), m(m), qpm(q/m) {}
+ParticleTypePoint::ParticleTypePoint(const double &q, const double &m) : ParticleType(PARTICLE_TYPE_POINT), q(q), m(m), qpm(q/m) {}
 
 void ParticleTypePoint::field(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) {
     Vec3<double> R = r - p.r;
@@ -77,13 +87,23 @@ Vec3<double> ParticleTypePoint::forcePm(const Vec3<double> &E, const Vec3<double
     return qpm*(E + v.cross(B))/CL2;
 }
 
-size_t ParticleTypePoint::load(std::ifstream &f) {
+size_t ParticleTypePoint::load(std::istream &f) {
     f >> q >> m >> qpm;
     return 0;
 }
 
-size_t ParticleTypePoint::save(std::ofstream &f) {
+size_t ParticleTypePoint::save(std::ostream &f) {
     f << q << " " << m << " " << qpm;
+    return 0;
+}
+
+size_t ParticleTypePoint::load(char *f) {
+    sscanf(f, "%le %le %le", &q, &m, &qpm);
+    return 0;
+}
+
+size_t ParticleTypePoint::save(FILE *f) {
+    fprintf(f, "%le %le %le", q, m, qpm);
     return 0;
 }
 
@@ -92,7 +112,7 @@ size_t ParticleTypePoint::save(std::ofstream &f) {
 //////////////////////////////////////////////////////////////////////////////
 
 ParticleTypeBall::ParticleTypeBall() : ParticleType(1), q(EQ), m(EM), qpm(EQ/EM), radius(RL) {}
-ParticleTypeBall::ParticleTypeBall(const double &q, const double &m, const double &radius) : ParticleType(1), q(q), m(m), qpm(q/m), radius(radius) {}
+ParticleTypeBall::ParticleTypeBall(const double &q, const double &m, const double &radius) : ParticleType(PARTICLE_TYPE_BALL), q(q), m(m), qpm(q/m), radius(radius) {}
 
 void ParticleTypeBall::field(Vec3<double> &E, Vec3<double> &B, const ParticleData &p, const Vec3<double> &r) {
     Vec3<double> R = r - p.r;
@@ -169,28 +189,38 @@ Vec3<double> ParticleTypeBall::forcePm(const Vec3<double> &E, const Vec3<double>
     return qpm*(E + v.cross(B))/CL2;
 }
 
-size_t ParticleTypeBall::load(std::ifstream &f) {
+size_t ParticleTypeBall::load(std::istream &f) {
     f >> q >> m >> qpm >> radius;
     return 0;
 }
 
-size_t ParticleTypeBall::save(std::ofstream &f) {
+size_t ParticleTypeBall::save(std::ostream &f) {
     f << q << " " << m << " " << qpm << " " << radius;
     return 0;
 }
 
+size_t ParticleTypeBall::load(char *f) {
+    sscanf(f, "%le %le %le %le", &q, &m, &qpm, &radius);
+    return 0;
+}
+
+size_t ParticleTypeBall::save(FILE *f) {
+    fprintf(f, "%le %le %le %le", q, m, qpm, radius);
+    return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-// Sphere method 
+// Sphere method
 // Различные реализации метода сфер
 // - метод интервалов
 // - метод бисекции
 // - метод бисекции с уточнением
 ///////////////////////////////////////////////////////////////////////////////
 
-std::pair<size_t, ParticleData> sm_left_intervals(  Particle *p, 
-                                                    const Vec3<double> &r, 
-                                                    const double &t, 
-                                                    const double &dt    ) 
+std::pair<size_t, ParticleData> sm_left_intervals(  Particle *p,
+                                                    const Vec3<double> &r,
+                                                    const double &t,
+                                                    const double &dt    )
 {
     ParticleData result;
     std::vector<ParticleData>::iterator pl = p->p.begin();
@@ -219,16 +249,16 @@ std::pair<size_t, ParticleData> sm_left_intervals(  Particle *p,
         f = (ct - nmax*cdt) - (r - pr->r).norm();
         nmax--;
         pr++;
-        //getchar(); 
+        //getchar();
     } while (pr != (p->p.rend()) && (f < 0));
     //std::cout << "n = " << nmax + 1 << " f = " << f << std::endl;
     return std::pair<size_t, ParticleData>(nmax + 1, p->p[nmax + 1 - nmin]);
 }
 
-std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p, 
-                                                    const Vec3<double> &r, 
-                                                    const double &t, 
-                                                    const double &dt    ) 
+std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p,
+                                                    const Vec3<double> &r,
+                                                    const double &t,
+                                                    const double &dt    )
 {
     ParticleData result;
     std::vector<ParticleData>::iterator pl = p->p.begin();
@@ -262,10 +292,10 @@ std::pair<size_t, ParticleData> sm_left_bisection(  Particle *p,
     return std::pair<size_t, ParticleData>(n2min + nmin, p->p[nmin - n2min]);
 }
 
-std::pair<size_t, ParticleData> sm_bisection(   Particle *p, 
-                                                const Vec3<double> &r, 
-                                                const double &t, 
-                                                const double &dt    ) 
+std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
+                                                const Vec3<double> &r,
+                                                const double &t,
+                                                const double &dt    )
 {
     ParticleData result;
     std::vector<ParticleData>::iterator pl = p->p.begin();
@@ -296,7 +326,7 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
             nmax = n;
         }
         //std::cout << "nmin = " << nmin << "nmax = " << nmax << " f = " << f << std::endl;
-        //getchar(); 
+        //getchar();
     } while (nmax != nmin + 1);
 
     ParticleData *p1(&(p->p[nmin - n2min])), *p2(&(p->p[nmin + 1 - n2min]));
@@ -328,7 +358,7 @@ std::pair<size_t, ParticleData> sm_bisection(   Particle *p,
     } while (dr - dl > e);
     result.v = p1->v + p1->a*d*cdt +  3.*A3*d2*cdt2 +  4.*A4*d3*cdt3 + 5.*A5*d4*cdt4;
     result.a = p1->a + 6.*A3*d*cdt + 12.*A4*d2*cdt2 + 20.*A5*d3*cdt3;
-    
+
     if (result.v.norm2() > 1) {
         std::cout << "\nnmin = " << nmin << ": " << p1->r << p1->v << p1->a << std::endl;
         std::cout << "nmax = " << nmax << ": " << p2->r << p2->v << p2->a << std::endl;
@@ -352,7 +382,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
     std::cout << "t1 = " << t1 << "; t = " << t << "; t2 = " << t2 << std::endl;
     std::cout << "n1 = " << t1/dt << "; n = " << t/dt << "; n2 = " << t2/dt  << std::endl;
     std::cout << "0: t = " << t << "; n = " << t1/dt <<  "; r = " << r0 + v0*t1*CL << "; v = " << v0 << "; a = " << Vec3<double>() << std::endl;
-    
+
     // Результат работы методов сфер
     std::pair<size_t, ParticleData> pr;
     pr = sm_left_intervals(p, r, t, dt);
@@ -372,7 +402,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
         B = Vec3<double>();
         p->type->fieldN(E, B, pr.second, r);
         std::cout << "delay non: E = " << E << " B = " << B << std::endl;
-        
+
         E = Vec3<double>();
         B = Vec3<double>();
         p->type->fieldN(E, B, p->p[0], r);
@@ -389,7 +419,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
         phi = 0;
         p->type->potentialN(A, phi, pr.second, r);
         std::cout << "delay non: A = " << A << " phi = " << phi << std::endl;
-        
+
         A = Vec3<double>();
         phi = 0;
         p->type->potentialN(A, phi, p->p[0], r);
@@ -412,7 +442,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
         B = Vec3<double>();
         p->type->fieldN(E, B, pr.second, r);
         std::cout << "delay non: E = " << E << " B = " << B << std::endl;
-        
+
         E = Vec3<double>();
         B = Vec3<double>();
         p->type->fieldN(E, B, p->p[0], r);
@@ -429,7 +459,7 @@ void test_sphere_method_l(Particle *p, const Vec3<double> &r, const double &t, c
         phi = 0;
         p->type->potentialN(A, phi, pr.second, r);
         std::cout << "delay non: A = " << A << " phi = " << phi << std::endl;
-        
+
         A = Vec3<double>();
         phi = 0;
         p->type->potentialN(A, phi, p->p[0], r);
@@ -470,7 +500,7 @@ void test_sphere_method() {
     double t2 = 100*dt;
     double t3 = 200*dt;
     double t4 = 2000*dt;
-    
+
     p.type = new ParticleTypePoint(q, m);
     test_sphere_method_l(&p, r1, t1, dt, v0, r0);
     test_sphere_method_l(&p, r1, t2, dt, v0, r0);
